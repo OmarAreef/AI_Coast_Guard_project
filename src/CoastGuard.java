@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 public class CoastGuard extends searchProblem {
@@ -6,6 +7,9 @@ public class CoastGuard extends searchProblem {
     @Override
     public boolean goalTest(State state) {
         // TODO Auto-generated method stub
+        if (state.ships.isEmpty()) {
+            return true;
+        }
         return false;
     }
 
@@ -18,7 +22,72 @@ public class CoastGuard extends searchProblem {
     @Override
     public State expand(State state, String operator) {
         // TODO Auto-generated method stub
-        return null;
+        State stateDeepCopy = state.deepCopy();
+        Agent agent = stateDeepCopy.agent;
+        ArrayList<Ship> ships = stateDeepCopy.ships;
+        Ship ShipAtMyLocation = null;
+        for (Ship ship : ships) {
+            if (agent.xPos == ship.xPos && agent.yPos == ship.yPos) {
+                ShipAtMyLocation = ship;
+            }
+        }
+
+        ArrayList<Station> stations = stateDeepCopy.stations;
+        Station stationAtMyLocation = null;
+        for (Station station : stations) {
+            if (agent.xPos == station.xPos && agent.yPos == station.yPos) {
+                stationAtMyLocation = station;
+            }
+        }
+
+        switch (operator) {
+            case "pickup":
+                if (ShipAtMyLocation == null) {
+                    break;
+                }
+                int passengersToPickUp = Math.min(agent.remainingCapacity, ShipAtMyLocation.passengers);
+                ShipAtMyLocation.pickUp(passengersToPickUp);
+                agent.pickUp(passengersToPickUp);
+                break;
+            case "drop":
+                if (stationAtMyLocation == null) {
+                    break;
+                }
+                agent.drop();
+                break;
+            case "retrieve":
+                if (ShipAtMyLocation == null) {
+                    break;
+                }
+                ships.remove(ShipAtMyLocation);
+                break;
+            case "up":
+                if (agent.yPos == agent.N - 1) {
+                    break;
+                }
+                agent.moveY(1);
+
+            case "down":
+                if (agent.yPos == 0) {
+                    break;
+                }
+                agent.moveY(-1);
+            case "left":
+                if (agent.xPos == 0) {
+                    break;
+                }
+                agent.moveX(-1);
+            case "right":
+                if (agent.xPos == agent.M - 1) {
+                    break;
+                }
+                agent.moveX(1);
+        }
+
+        if (state.equals(stateDeepCopy)) {
+            return null;
+        }
+        return stateDeepCopy;
     }
 
     public static String genGrid() {
@@ -73,8 +142,17 @@ public class CoastGuard extends searchProblem {
     }
 
     public static String solve(String grid, String strategy, boolean visualize) {
+        String[] girdParams = grid.split(";");
 
-        
+        String[] gridSize = girdParams[0].split(",");
+        int M = Integer.parseInt(gridSize[0]);
+        int N = Integer.parseInt(gridSize[1]);
+
+        int C = Integer.parseInt(girdParams[1]);
+
+        String[] agentStart = girdParams[2].split(",");
+        int cgX = Integer.parseInt(agentStart[0]);
+        int cgY = Integer.parseInt(agentStart[1]);
         return "";
     }
 

@@ -1,4 +1,7 @@
+package code;
 import java.util.ArrayList;
+
+import code.TreeNode;
 
 public class generalSearch {
     public static TreeNode GeneralSearch (searchProblem problem, QueuingFunction searchMethod) {

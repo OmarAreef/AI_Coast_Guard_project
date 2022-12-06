@@ -1,14 +1,26 @@
 package code;
+
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
+import java.util.Set;
+
+import code.QueuingFunctions.BFS;
+import code.QueuingFunctions.QueuingFunction;
+
+import java.util.HashSet;
 
 public class CoastGuard extends searchProblem {
+
+    public CoastGuard(Set<String> operators, State initialState, Set<State> stateSpace) {
+        super(operators, initialState, stateSpace);
+        // TODO Auto-generated constructor stub
+    }
 
     @Override
     public boolean goalTest(State state) {
         // TODO Auto-generated method stub
-        if (state.ships.isEmpty()) {
+        if (state.ships.isEmpty() && state.agent.remainingCapacity == state.agent.totalCapacity) {
+            // if (state.ships.isEmpty()) {
+
             return true;
         }
         return false;
@@ -49,45 +61,61 @@ public class CoastGuard extends searchProblem {
                 int passengersToPickUp = Math.min(agent.remainingCapacity, ShipAtMyLocation.passengers);
                 ShipAtMyLocation.pickUp(passengersToPickUp);
                 agent.pickUp(passengersToPickUp);
+                System.out.println("---------------------- stateDeepCopy ----------------");
+                System.out.println(stateDeepCopy.toString());
                 break;
             case "drop":
-                if (stationAtMyLocation == null) {
+                if (stationAtMyLocation == null
+                        || (stateDeepCopy.agent.remainingCapacity == stateDeepCopy.agent.totalCapacity)) {
                     break;
                 }
+                System.out.println("---------------------- stateDeepCopy ----------------");
+                System.out.println(stateDeepCopy.toString());
                 agent.drop();
+
                 break;
             case "retrieve":
-                if (ShipAtMyLocation == null) {
+                if (ShipAtMyLocation == null || (ShipAtMyLocation.passengers > 0 && ShipAtMyLocation.health > 0)) {
                     break;
                 }
+
+                stateDeepCopy.retrievedBlackBoxes = stateDeepCopy.retrievedBlackBoxes + 1;
                 ships.remove(ShipAtMyLocation);
+                System.out.println("---------------------- stateDeepCopy ----------------");
+                System.out.println(stateDeepCopy.toString());
                 break;
             case "up":
-                if (agent.yPos == agent.N - 1) {
-                    break;
-                }
-                agent.moveY(1);
-
-            case "down":
                 if (agent.yPos == 0) {
                     break;
                 }
                 agent.moveY(-1);
+                break;
+            case "down":
+                if (agent.yPos == agent.N - 1) {
+                    break;
+                }
+                agent.moveY(1);
+                break;
             case "left":
                 if (agent.xPos == 0) {
                     break;
                 }
                 agent.moveX(-1);
+                break;
             case "right":
                 if (agent.xPos == agent.M - 1) {
                     break;
                 }
                 agent.moveX(1);
+                break;
+            default:
+                System.out.println("defaultOPe");
         }
 
         if (state.equals(stateDeepCopy)) {
             return null;
         }
+
         return stateDeepCopy;
     }
 
@@ -154,12 +182,58 @@ public class CoastGuard extends searchProblem {
         String[] agentStart = girdParams[2].split(",");
         int cgX = Integer.parseInt(agentStart[0]);
         int cgY = Integer.parseInt(agentStart[1]);
-        return "";
+        Agent agent = new Agent(cgY, cgX, C, M, N);
+
+        String[] stationLocations = girdParams[3].split(",");
+        ArrayList<Station> stationsArray = new ArrayList<Station>();
+        for (int i = 0; i < stationLocations.length - 1; i = i + 2) {
+            Station station = new Station(Integer.parseInt(stationLocations[i + 1]),
+                    Integer.parseInt(stationLocations[i]));
+            stationsArray.add(station);
+        }
+
+        String[] shipsLocations = girdParams[4].split(",");
+        ArrayList<Ship> shipsArray = new ArrayList<Ship>();
+        for (int i = 0; i < shipsLocations.length - 2; i = i + 3) {
+            Ship ship = new Ship(Integer.parseInt(shipsLocations[i + 1]), Integer.parseInt(shipsLocations[i]),
+                    Integer.parseInt(shipsLocations[i + 2]), 100);
+            shipsArray.add(ship);
+        }
+
+        State initialState = new State(shipsArray, stationsArray, agent, 0, 0);
+
+        Set<String> operators = new HashSet<String>() {
+            {
+                add("pickup");
+                add("retrieve");
+                add("drop");
+                add("up");
+                add("left");
+                add("right");
+                add("down");
+
+            }
+        };
+
+        CoastGuard problem = new CoastGuard(operators, initialState, new HashSet<State>());
+
+        QueuingFunction Qfunc = new BFS();
+        TreeNode solution = generalSearch.GeneralSearch(problem, Qfunc);
+
+        String solutionString = "";
+        int retrievedBlackBoxes = solution.state.retrievedBlackBoxes;
+        while (solution.parent != null) {
+            solutionString = solution.operator + "," + solutionString;
+            solution = solution.parent;
+        }
+        return solutionString + retrievedBlackBoxes;
     }
 
     public static void main(String[] args) {
         String grid = genGrid();
-        solve(grid, "df", false);
+        String test_grid = "3,4;97;1,2;0,1;3,2,65;";
+        String sol = solve(test_grid, "df", false);
+        System.out.print(sol);
     }
 
 }

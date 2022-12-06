@@ -1,3 +1,5 @@
+package code;
+
 import java.util.ArrayList;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -134,6 +136,7 @@ class Agent implements Serializable {
     public void moveY(int direction) {
         this.yPos = this.yPos + direction;
     }
+
     public void moveX(int direction) {
         this.xPos = this.xPos + direction;
     }
@@ -192,7 +195,7 @@ public class State implements Serializable {
                 return false;
         } else if (!ships.equals(other.ships))
             return false;
-       
+
         if (agent == null) {
             if (other.agent != null)
                 return false;
@@ -220,8 +223,9 @@ public class State implements Serializable {
         }
     }
 
-    public State(ArrayList<Ship> ships, Agent agent, int deaths, int retrieved) {
+    public State(ArrayList<Ship> ships, ArrayList<Station> stations, Agent agent, int deaths, int retrieved) {
         this.ships = ships;
+        this.stations = stations;
         this.agent = agent;
         this.deaths = deaths;
         this.retrievedBlackBoxes = retrieved;

@@ -7,6 +7,12 @@ public abstract class searchProblem {
     public State initialState;
     public Set<State> stateSpace;
 
+    public searchProblem(Set<String> operators, State initialState, Set<State> stateSpace) {
+        this.operators = operators;
+        this.initialState = initialState;
+        this.stateSpace = stateSpace;
+    }
+
     public abstract boolean goalTest(State state);
 
     public abstract int pathCost(ArrayList<String> actions);

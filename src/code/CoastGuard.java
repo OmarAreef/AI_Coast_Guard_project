@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import code.QueuingFunctions.BFS;
+import code.QueuingFunctions.DFS;
 import code.QueuingFunctions.QueuingFunction;
 
 import java.util.HashSet;
 
 public class CoastGuard extends searchProblem {
 
-    public CoastGuard(Set<String> operators, State initialState, Set<State> stateSpace) {
+    public CoastGuard(ArrayList<String> operators, State initialState, Set<State> stateSpace) {
         super(operators, initialState, stateSpace);
         // TODO Auto-generated constructor stub
     }
@@ -40,7 +41,7 @@ public class CoastGuard extends searchProblem {
         ArrayList<Ship> ships = stateDeepCopy.ships;
         Ship ShipAtMyLocation = null;
         for (Ship ship : ships) {
-            if (agent.xPos == ship.xPos && agent.yPos == ship.yPos) {
+            if (agent.column == ship.xPos && agent.row == ship.yPos) {
                 ShipAtMyLocation = ship;
             }
         }
@@ -48,7 +49,7 @@ public class CoastGuard extends searchProblem {
         ArrayList<Station> stations = stateDeepCopy.stations;
         Station stationAtMyLocation = null;
         for (Station station : stations) {
-            if (agent.xPos == station.xPos && agent.yPos == station.yPos) {
+            if (agent.column == station.xPos && agent.row == station.yPos) {
                 stationAtMyLocation = station;
             }
         }
@@ -61,75 +62,79 @@ public class CoastGuard extends searchProblem {
                 int passengersToPickUp = Math.min(agent.remainingCapacity, ShipAtMyLocation.passengers);
                 ShipAtMyLocation.pickUp(passengersToPickUp);
                 agent.pickUp(passengersToPickUp);
-                System.out.println("---------------------- stateDeepCopy ----------------");
-                System.out.println(stateDeepCopy.toString());
+
                 break;
             case "drop":
                 if (stationAtMyLocation == null
                         || (stateDeepCopy.agent.remainingCapacity == stateDeepCopy.agent.totalCapacity)) {
                     break;
                 }
-                System.out.println("---------------------- stateDeepCopy ----------------");
-                System.out.println(stateDeepCopy.toString());
+
                 agent.drop();
 
                 break;
             case "retrieve":
-                if (ShipAtMyLocation == null || (ShipAtMyLocation.passengers > 0 && ShipAtMyLocation.health > 0)) {
+                if (ShipAtMyLocation == null || (ShipAtMyLocation.passengers > 0)) {
                     break;
                 }
 
                 stateDeepCopy.retrievedBlackBoxes = stateDeepCopy.retrievedBlackBoxes + 1;
                 ships.remove(ShipAtMyLocation);
-                System.out.println("---------------------- stateDeepCopy ----------------");
-                System.out.println(stateDeepCopy.toString());
+
+                // System.out.println(stateDeepCopy.toString());
                 break;
             case "up":
-                if (agent.yPos == 0) {
+                if (agent.row <= 0) {
                     break;
                 }
                 agent.moveY(-1);
                 break;
             case "down":
-                if (agent.yPos == agent.N - 1) {
+                if (agent.row >= agent.rows- 1) {
                     break;
                 }
                 agent.moveY(1);
                 break;
             case "left":
-                if (agent.xPos == 0) {
+                if (agent.column <= 0) {
                     break;
                 }
+                System.out.println("Before ----- move");
+                System.out.println(agent.column);
+
                 agent.moveX(-1);
+                System.out.println("After ----- move");
+                System.out.println(agent.column);
                 break;
             case "right":
-                if (agent.xPos == agent.M - 1) {
+                if (agent.column >= agent.columns - 1) {
                     break;
                 }
                 agent.moveX(1);
                 break;
-            default:
-                System.out.println("defaultOPe");
+
         }
 
         if (state.equals(stateDeepCopy)) {
             return null;
         }
 
+        stateDeepCopy.update();
+
         return stateDeepCopy;
     }
 
     public static String genGrid() {
-        int M = (int) (Math.random() * 5 + 1);
-        int N = (int) (Math.random() * 15 + 1);
+        int MRows = (int) (Math.random() * 5 + 1);
+        int NColumns = (int) (Math.random() * 15 + 1);
 
         int C = (int) (Math.random() * 70 + 30);
 
-        int cgX = (int) (Math.random() * M);
-        int cgY = (int) (Math.random() * N);
+        int cgColumn = (int) (Math.random() * NColumns);
+        int cgRow = (int) (Math.random() * MRows);
 
-        ArrayList<String> stationLocations = generateLocations(M, N, cgX, cgY, new ArrayList<>());
-        ArrayList<String> shipLocations = generateLocations(M, N, cgX, cgY, stationLocations);
+        ArrayList<String> stationLocations = generateLocations(MRows, NColumns, cgColumn, cgRow, new ArrayList<>());
+        ArrayList<String> shipLocations = generateLocations(MRows, NColumns, cgColumn, cgRow, stationLocations);
 
         String shipLocationsAndPassengerNumbers = "";
         for (String shipString : shipLocations) {
@@ -145,27 +150,28 @@ public class CoastGuard extends searchProblem {
         }
         stationStringFinal = stationStringFinal.substring(0,
                 stationStringFinal.length() - 1);
-        return ("" + M + "," + N + ";" + C + ";" + cgX + "," + cgY + ";" + stationStringFinal + ";"
+        return ("" + NColumns + "," + MRows + ";" + C + ";" + cgRow + "," + cgColumn + ";" + stationStringFinal + ";"
                 + shipLocationsAndPassengerNumbers);
     }
 
-    private static ArrayList<String> generateLocations(int M, int N, int cgX, int cgY,
+    private static ArrayList<String> generateLocations(int rows, int columns, int cgColumn, int cgRow,
             ArrayList<String> occupiedLocations) {
-        int numberOfShips = (int) ((Math.random() * (M - 1) * N) + 1);
-        while (numberOfShips > (M * N)) {
-            numberOfShips = (int) ((Math.random() * (M - 1) * N) + 1);
+        int numberOfShips = (int) ((Math.random() * (rows - 1) * columns) + 1);
+        while (numberOfShips > (rows * columns)) {
+            numberOfShips = (int) ((Math.random() * (rows - 1) * columns) + 1);
         }
         ArrayList<String> stationLocations = new ArrayList<String>();
         for (int i = 0; i < numberOfShips; i++) {
-            int stationX = (int) (Math.random() * M);
-            int stationY = (int) (Math.random() * N);
-            while ((stationX == cgX && stationY == cgY) || stationLocations.contains(stationX + "," + stationY) ||
-                    occupiedLocations.contains(stationX + "," + stationY)) {
-                stationX = (int) (Math.random() * M);
-                stationY = (int) (Math.random() * N);
+            int stationColumn = (int) (Math.random() * columns);
+            int stationRow = (int) (Math.random() * rows);
+            while ((stationColumn == cgColumn && stationRow == cgRow)
+                    || stationLocations.contains(stationRow + "," + stationColumn) ||
+                    occupiedLocations.contains(stationRow + "," + stationColumn)) {
+                stationColumn = (int) (Math.random() * columns);
+                stationRow = (int) (Math.random() * rows);
 
             }
-            stationLocations.add(stationX + "," + stationY);
+            stationLocations.add(stationRow + "," + stationColumn);
         }
         return stationLocations;
     }
@@ -174,15 +180,15 @@ public class CoastGuard extends searchProblem {
         String[] girdParams = grid.split(";");
 
         String[] gridSize = girdParams[0].split(",");
-        int M = Integer.parseInt(gridSize[0]);
-        int N = Integer.parseInt(gridSize[1]);
+        int Columns = Integer.parseInt(gridSize[0]);
+        int Rows = Integer.parseInt(gridSize[1]);
 
         int C = Integer.parseInt(girdParams[1]);
 
         String[] agentStart = girdParams[2].split(",");
-        int cgX = Integer.parseInt(agentStart[0]);
-        int cgY = Integer.parseInt(agentStart[1]);
-        Agent agent = new Agent(cgY, cgX, C, M, N);
+        int cgRow = Integer.parseInt(agentStart[0]);
+        int cgColumn = Integer.parseInt(agentStart[1]);
+        Agent agent = new Agent(cgColumn, cgRow, C, C, Rows, Columns);
 
         String[] stationLocations = girdParams[3].split(",");
         ArrayList<Station> stationsArray = new ArrayList<Station>();
@@ -202,14 +208,15 @@ public class CoastGuard extends searchProblem {
 
         State initialState = new State(shipsArray, stationsArray, agent, 0, 0);
 
-        Set<String> operators = new HashSet<String>() {
+        ArrayList<String> operators = new ArrayList<String>() {
             {
+
                 add("pickup");
                 add("retrieve");
                 add("drop");
-                add("up");
                 add("left");
                 add("right");
+                add("up");
                 add("down");
 
             }
@@ -217,23 +224,33 @@ public class CoastGuard extends searchProblem {
 
         CoastGuard problem = new CoastGuard(operators, initialState, new HashSet<State>());
 
-        QueuingFunction Qfunc = new BFS();
-        TreeNode solution = generalSearch.GeneralSearch(problem, Qfunc);
+        // QueuingFunction Qfunc = new BFS();
+        QueuingFunction Qfunc = new DFS();
 
+        TreeNode solution = generalSearch.GeneralSearch(problem, Qfunc);
+        if (solution == null) {
+            return "No Solution found";
+        }
         String solutionString = "";
         int retrievedBlackBoxes = solution.state.retrievedBlackBoxes;
+        int deaths = solution.state.deaths;
+        int expandedStates = solution.state.expandedStates;
         while (solution.parent != null) {
             solutionString = solution.operator + "," + solutionString;
             solution = solution.parent;
         }
-        return solutionString + retrievedBlackBoxes;
+        return solutionString + deaths + "," + retrievedBlackBoxes + "," + expandedStates;
     }
 
     public static void main(String[] args) {
         String grid = genGrid();
-        String test_grid = "3,4;97;1,2;0,1;3,2,65;";
+        String test_grid = "3,4;90;1,2;0,1;3,2,65;";
+        // String test_grid = "1,15;72;0,7;0,10;0,2,73;";
+
         String sol = solve(test_grid, "df", false);
-        System.out.print(sol);
+        System.out.println(sol);
+        System.out.println(grid);
+
     }
 
 }

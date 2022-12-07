@@ -1,6 +1,7 @@
 package code;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -61,27 +62,37 @@ class Ship implements Serializable {
         this.passengers = this.passengers - numberOfPassengers;
     }
 
-    public void updateShip() {
+    public int updateShip() {
         if (this.passengers > 0) {
             this.passengers = this.passengers - 1;
-            return;
+            return 1;
         }
         this.health = this.health - 1;
+        return 0;
     }
 }
 
 class Agent implements Serializable {
 
-    public int xPos;
-    public int yPos;
+    public int column;
+    public int row;
     public int totalCapacity;
     public int remainingCapacity;
-    public int M;
-    public int N;
+    public int rows;
+    public int columns;
+
+    public Agent(int column, int row, int totalCapacity, int remainingCapacity, int rows, int columns) {
+        this.column = column;
+        this.row = row;
+        this.totalCapacity = totalCapacity;
+        this.remainingCapacity = remainingCapacity;
+        this.rows = rows;
+        this.columns = columns;
+    }
 
     @Override
     public String toString() {
-        return "Agent [xPos=" + xPos + ", yPos=" + yPos + ", totalCapacity=" + totalCapacity + ", remainingCapacity="
+        return "Agent [xPos=" + column + ", yPos=" + row + ", totalCapacity=" + totalCapacity + ", remainingCapacity="
                 + remainingCapacity + "]";
     }
 
@@ -89,8 +100,8 @@ class Agent implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + xPos;
-        result = prime * result + yPos;
+        result = prime * result + column;
+        result = prime * result + row;
         result = prime * result + totalCapacity;
         result = prime * result + remainingCapacity;
         return result;
@@ -105,9 +116,9 @@ class Agent implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         Agent other = (Agent) obj;
-        if (xPos != other.xPos)
+        if (column != other.column)
             return false;
-        if (yPos != other.yPos)
+        if (row != other.row)
             return false;
         if (totalCapacity != other.totalCapacity)
             return false;
@@ -116,14 +127,6 @@ class Agent implements Serializable {
         return true;
     }
 
-    public Agent(int xPos, int yPos, int totalCapacity, int M, int N) {
-        this.xPos = xPos;
-        this.yPos = yPos;
-        this.totalCapacity = totalCapacity;
-        this.remainingCapacity = totalCapacity;
-        this.M = M;
-        this.N = N;
-    }
 
     public void drop() {
         this.remainingCapacity = totalCapacity;
@@ -134,11 +137,11 @@ class Agent implements Serializable {
     }
 
     public void moveY(int direction) {
-        this.yPos = this.yPos + direction;
+        this.row = this.row + direction;
     }
 
     public void moveX(int direction) {
-        this.xPos = this.xPos + direction;
+        this.column = this.column + direction;
     }
 
 }
@@ -152,6 +155,36 @@ class Station implements Serializable {
         this.yPos = yPos;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + xPos;
+        result = prime * result + yPos;
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Station other = (Station) obj;
+        if (xPos != other.xPos)
+            return false;
+        if (yPos != other.yPos)
+            return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Station [xPos=" + xPos + ", yPos=" + yPos + "]";
+    }
+
 }
 
 public class State implements Serializable {
@@ -161,10 +194,12 @@ public class State implements Serializable {
     public Agent agent;
     public int deaths;
     public int retrievedBlackBoxes;
+    public int expandedStates;
 
     @Override
     public String toString() {
-        return "State [ships=" + ships.toString() + ", agent=" + agent.toString() + ", deaths=" + deaths
+        return "State [ships=" + ships.toString() + "[stations=" + stations.toString() + ", agent=" + agent.toString()
+                + ", deaths=" + deaths
                 + ", retrievedBlackBoxes="
                 + retrievedBlackBoxes + "]";
     }
@@ -229,6 +264,19 @@ public class State implements Serializable {
         this.agent = agent;
         this.deaths = deaths;
         this.retrievedBlackBoxes = retrieved;
+
     }
 
+    public void update() {
+        ArrayList<Ship> shipsToRemove = new ArrayList<Ship>();
+        for (Ship ship : this.ships) {
+            int deaths = ship.updateShip();
+            if (ship.health == 0 && ship.passengers == 0) {
+                shipsToRemove.add(ship);
+            }
+            this.deaths += deaths;
+        }
+        this.ships.removeAll(shipsToRemove);
+
+    }
 }

@@ -5,6 +5,9 @@ import java.util.Set;
 
 import code.QueuingFunctions.BFS;
 import code.QueuingFunctions.DFS;
+import code.QueuingFunctions.GR1;
+import code.QueuingFunctions.GR2;
+import code.QueuingFunctions.ID;
 import code.QueuingFunctions.QueuingFunction;
 
 import java.util.HashSet;
@@ -37,6 +40,7 @@ public class CoastGuard extends searchProblem {
     public State expand(State state, String operator) {
         // TODO Auto-generated method stub
         State stateDeepCopy = state.deepCopy();
+
         Agent agent = stateDeepCopy.agent;
         ArrayList<Ship> ships = stateDeepCopy.ships;
         Ship ShipAtMyLocation = null;
@@ -74,14 +78,13 @@ public class CoastGuard extends searchProblem {
 
                 break;
             case "retrieve":
-                if (ShipAtMyLocation == null || (ShipAtMyLocation.passengers > 0)) {
+                if (ShipAtMyLocation == null || !(ShipAtMyLocation.isWreck())) {
                     break;
                 }
 
                 stateDeepCopy.retrievedBlackBoxes = stateDeepCopy.retrievedBlackBoxes + 1;
                 ships.remove(ShipAtMyLocation);
 
-                // System.out.println(stateDeepCopy.toString());
                 break;
             case "up":
                 if (agent.row <= 0) {
@@ -90,7 +93,7 @@ public class CoastGuard extends searchProblem {
                 agent.moveY(-1);
                 break;
             case "down":
-                if (agent.row >= agent.rows- 1) {
+                if (agent.row >= agent.rows - 1) {
                     break;
                 }
                 agent.moveY(1);
@@ -99,12 +102,9 @@ public class CoastGuard extends searchProblem {
                 if (agent.column <= 0) {
                     break;
                 }
-                System.out.println("Before ----- move");
-                System.out.println(agent.column);
 
                 agent.moveX(-1);
-                System.out.println("After ----- move");
-                System.out.println(agent.column);
+
                 break;
             case "right":
                 if (agent.column >= agent.columns - 1) {
@@ -177,6 +177,8 @@ public class CoastGuard extends searchProblem {
     }
 
     public static String solve(String grid, String strategy, boolean visualize) {
+        System.out.println("Started solving");
+
         String[] girdParams = grid.split(";");
 
         String[] gridSize = girdParams[0].split(",");
@@ -224,8 +226,27 @@ public class CoastGuard extends searchProblem {
 
         CoastGuard problem = new CoastGuard(operators, initialState, new HashSet<State>());
 
-        // QueuingFunction Qfunc = new BFS();
-        QueuingFunction Qfunc = new DFS();
+        QueuingFunction Qfunc = null;
+        switch (strategy) {
+            case "BF":
+                Qfunc = new BFS();
+                break;
+            case "DF":
+                Qfunc = new DFS();
+                break;
+            case "ID":
+                Qfunc = new ID(problem.initialState);
+                break;
+            case "GR1":
+                Qfunc = new GR1();
+                break;
+            case "GR2":
+                Qfunc = new GR2();
+                break;
+            default:
+                Qfunc = new GR1();
+        }
+        // QueuingFunction Qfunc = new DFS();
 
         TreeNode solution = generalSearch.GeneralSearch(problem, Qfunc);
         if (solution == null) {
@@ -239,17 +260,24 @@ public class CoastGuard extends searchProblem {
             solutionString = solution.operator + "," + solutionString;
             solution = solution.parent;
         }
-        return solutionString + deaths + "," + retrievedBlackBoxes + "," + expandedStates;
+        solutionString = solutionString.substring(0, solutionString.length() - 1);
+        return solutionString + ";" + deaths + ";" + retrievedBlackBoxes + ";" + expandedStates;
     }
 
     public static void main(String[] args) {
-        String grid = genGrid();
-        String test_grid = "3,4;90;1,2;0,1;3,2,65;";
+        // String grid = genGrid();
+        // String test_grid = "5,6;50;0,1;0,4,3,3;1,1,90;";
+        // String test_grid = "3,4;97;1,2;0,1;3,2,65;";
+        // String test_grid = "6,6;52;2,0;2,4,4,0,5,4;2,1,19,4,2,6,5,0,8;";
+
+        String test_grid = "8,5;60;4,6;2,7;3,4,37,3,5,93,4,0,40;";
+        String grid9 = "7,5;100;3,4;2,6,3,5;0,0,4,0,1,8,1,4,77,1,5,1,3,2,94,4,3,46;";
+
+        ;
         // String test_grid = "1,15;72;0,7;0,10;0,2,73;";
 
-        String sol = solve(test_grid, "df", false);
+        String sol = solve(grid9, "GR1", false);
         System.out.println(sol);
-        System.out.println(grid);
 
     }
 

@@ -2,75 +2,12 @@ package code;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-
-class Ship implements Serializable {
-
-    public int xPos;
-    public int yPos;
-    public int passengers;
-    public int health;
-
-    @Override
-    public String toString() {
-        return "Ship [xPos=" + xPos + ", yPos=" + yPos + ", passengers=" + passengers + ", health=" + health + "]";
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + xPos;
-        result = prime * result + yPos;
-        result = prime * result + passengers;
-        result = prime * result + health;
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Ship other = (Ship) obj;
-        if (xPos != other.xPos)
-            return false;
-        if (yPos != other.yPos)
-            return false;
-        if (passengers != other.passengers)
-            return false;
-        if (health != other.health)
-            return false;
-        return true;
-    }
-
-    public Ship(int xPos, int yPos, int passengers, int health) {
-        this.xPos = xPos;
-        this.yPos = yPos;
-        this.passengers = passengers;
-        this.health = health;
-    }
-
-    public void pickUp(int numberOfPassengers) {
-        this.passengers = this.passengers - numberOfPassengers;
-    }
-
-    public int updateShip() {
-        if (this.passengers > 0) {
-            this.passengers = this.passengers - 1;
-            return 1;
-        }
-        this.health = this.health - 1;
-        return 0;
-    }
-}
 
 class Agent implements Serializable {
 
@@ -92,7 +29,7 @@ class Agent implements Serializable {
 
     @Override
     public String toString() {
-        return "Agent [xPos=" + column + ", yPos=" + row + ", totalCapacity=" + totalCapacity + ", remainingCapacity="
+        return "Agent [xPos=" + column + ", yPos=" + row + ", remainingCapacity="
                 + remainingCapacity + "]";
     }
 
@@ -102,7 +39,6 @@ class Agent implements Serializable {
         int result = 1;
         result = prime * result + column;
         result = prime * result + row;
-        result = prime * result + totalCapacity;
         result = prime * result + remainingCapacity;
         return result;
     }
@@ -120,13 +56,10 @@ class Agent implements Serializable {
             return false;
         if (row != other.row)
             return false;
-        if (totalCapacity != other.totalCapacity)
-            return false;
         if (remainingCapacity != other.remainingCapacity)
             return false;
         return true;
     }
-
 
     public void drop() {
         this.remainingCapacity = totalCapacity;
@@ -197,50 +130,35 @@ public class State implements Serializable {
     public int expandedStates;
 
     @Override
-    public String toString() {
-        return "State [ships=" + ships.toString() + "[stations=" + stations.toString() + ", agent=" + agent.toString()
-                + ", deaths=" + deaths
-                + ", retrievedBlackBoxes="
-                + retrievedBlackBoxes + "]";
-    }
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((ships == null) ? 0 : ships.hashCode());
-        result = prime * result + ((stations == null) ? 0 : stations.hashCode());
         result = prime * result + ((agent == null) ? 0 : agent.hashCode());
         result = prime * result + deaths;
         result = prime * result + retrievedBlackBoxes;
         return result;
+        // return Objects.hash(this.toString());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        State other = (State) obj;
-        if (ships == null) {
-            if (other.ships != null)
-                return false;
-        } else if (!ships.equals(other.ships))
-            return false;
+        return (this.toString().equals(obj.toString()));
+    }
 
-        if (agent == null) {
-            if (other.agent != null)
-                return false;
-        } else if (!agent.equals(other.agent))
-            return false;
-        if (deaths != other.deaths)
-            return false;
-        if (retrievedBlackBoxes != other.retrievedBlackBoxes)
-            return false;
-        return true;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ships.size(); i++) {
+            sb.append(ships.get(i).toString());
+            sb.append(", ");
+        }
+        String shipsString = sb.toString();
+        return "State [ships=" + shipsString
+                + ", agent=" + agent.toString()
+                + ", deaths=" + deaths
+                + ", retrievedBlackBoxes="
+                + retrievedBlackBoxes + "]";
     }
 
     public State deepCopy() {

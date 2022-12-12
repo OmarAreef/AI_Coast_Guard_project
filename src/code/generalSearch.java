@@ -9,7 +9,6 @@ import code.QueuingFunctions.QueuingFunction;
 public class generalSearch {
 
     public static TreeNode GeneralSearch(searchProblem problem, QueuingFunction searchMethod) {
-        Set<State> previousStates = new HashSet<State>();
         int expandedStates = 0;
         TreeNode rootNode = new TreeNode(problem.initialState);
         ArrayList<TreeNode> nodes = new ArrayList<TreeNode>();
@@ -24,9 +23,8 @@ public class generalSearch {
 
             if (problem.goalTest(first.state)) {
                 first.state.expandedStates = expandedStates;
-                System.out.println(previousStates.size());
                 System.out.println(first.depth);
-
+                System.out.println(first.state.toString());
                 return first;
             }
             for (String operartor : problem.operators) {
@@ -34,31 +32,34 @@ public class generalSearch {
                 if (expansionState == null) {
                     continue;
                 }
-                if (previousStates.contains(expansionState)) {
-                    // System.out.println("---------------------- Repeated ----------------");
-                    // System.out.println(expansionState.toString());
-                    // System.out.println(previousStates.size());
 
-                    continue;
-                }
                 if (first.operator != null) {
-                    if (operartor.equals("up") && first.operator.equals("down")) {
+                    if (operartor.equals("up") && (first.operator.equals("down") ||
+                            first.operator.equals("right")
+                            || first.operator.equals("left"))) {
                         continue;
                     }
-                    if (operartor.equals("down") && first.operator.equals("up")) {
+                    if (operartor.equals("down") && (first.operator.equals("up") ||
+                            first.operator.equals("left")
+                            || first.operator.equals("right"))) {
                         continue;
                     }
+                    // if (operartor.equals("up") && (first.operator.equals("down"))) {
+                    // continue;
+                    // }
+                    // if (operartor.equals("down") && (first.operator.equals("up"))) {
+                    // continue;
+                    // }
                     if (operartor.equals("right") && first.operator.equals("left")) {
                         continue;
                     }
                     if (operartor.equals("left") && first.operator.equals("right")) {
                         continue;
                     }
+
                 }
 
-                previousStates.add(expansionState);
-
-                TreeNode child = new TreeNode(expansionState, first, operartor, first.depth + 1, first.depth + 1);
+                TreeNode child = new TreeNode(expansionState, first, operartor, first.depth + 1, null);
                 searchMethod.queingFunction(child, nodes);
             }
         }

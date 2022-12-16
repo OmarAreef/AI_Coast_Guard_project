@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import code.QueuingFunctions.GR1;
+import code.QueuingFunctions.GR2;
 import code.QueuingFunctions.QueuingFunction;
 
 public class generalSearch {
@@ -23,8 +25,6 @@ public class generalSearch {
 
             if (problem.goalTest(first.state)) {
                 first.state.expandedStates = expandedStates;
-                System.out.println(first.depth);
-                System.out.println(first.state.toString());
                 return first;
             }
             for (String operartor : problem.operators) {
@@ -44,12 +44,15 @@ public class generalSearch {
                             || first.operator.equals("right"))) {
                         continue;
                     }
-                    // if (operartor.equals("up") && (first.operator.equals("down"))) {
+                    // if (operartor.equals("up") && first.operator.equals("down")) {
+
                     // continue;
                     // }
-                    // if (operartor.equals("down") && (first.operator.equals("up"))) {
+                    // if (operartor.equals("down") && first.operator.equals("up")) {
+
                     // continue;
                     // }
+
                     if (operartor.equals("right") && first.operator.equals("left")) {
                         continue;
                     }
@@ -58,8 +61,9 @@ public class generalSearch {
                     }
 
                 }
+                Cost cost = new Cost(-expansionState.deaths, expansionState.retrievedBlackBoxes);
 
-                TreeNode child = new TreeNode(expansionState, first, operartor, first.depth + 1, null);
+                TreeNode child = new TreeNode(expansionState, first, operartor, first.depth + 1, cost);
                 searchMethod.queingFunction(child, nodes);
             }
         }

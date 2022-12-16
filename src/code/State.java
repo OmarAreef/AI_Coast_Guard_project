@@ -33,6 +33,11 @@ class Agent implements Serializable {
                 + remainingCapacity + "]";
     }
 
+    public String toStringGrid() {
+        return " Agent ("
+                + remainingCapacity + ")  ";
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -118,6 +123,9 @@ class Station implements Serializable {
         return "Station [xPos=" + xPos + ", yPos=" + yPos + "]";
     }
 
+    public String toStringGrid() {
+        return "  Station  ";
+    }
 }
 
 public class State implements Serializable {

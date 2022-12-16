@@ -46,7 +46,7 @@ public class GR1 extends QueuingFunction {
     @Override
     public ArrayList<TreeNode> queingFunction(TreeNode node, ArrayList<TreeNode> nodesList) {
         if (previousStates.contains(node.state)) {
-            System.out.println(previousStates.size());
+            // System.out.println(previousStates.size());
             return nodesList;
         }
         Cost costEst = generateHeuristicCost(node.state);

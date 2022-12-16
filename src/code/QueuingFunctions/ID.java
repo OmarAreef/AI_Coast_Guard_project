@@ -25,12 +25,8 @@ public class ID extends QueuingFunction {
         if (nodesList.size() == 0) {
             this.depth = this.depth + 1;
             nodesList.add(root);
-            System.out.println("=----- DEPTH =====--");
-            System.out.println(this.depth);
-            System.out.println(previousStates.size());
 
             this.previousStates.clear();
-            System.out.println(previousStates.size());
 
             previousStates.add(root.state);
             return nodesList;

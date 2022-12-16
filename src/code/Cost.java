@@ -20,6 +20,11 @@ public class Cost implements Comparable<Cost>, Serializable {
         return -this.passengersAlive + o.passengersAlive;
     }
 
+    public void addCost(Cost cost) {
+        this.passengersAlive += cost.passengersAlive;
+        this.retrievedBlackBoxes += cost.retrievedBlackBoxes;
+    }
+
     @Override
     public String toString() {
         return "Cost [passengersAlive=" + passengersAlive + ", retrievedBlackBoxes=" + retrievedBlackBoxes + "]";

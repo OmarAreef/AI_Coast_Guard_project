@@ -14,6 +14,10 @@ public class Ship implements Serializable {
         return "Ship [xPos=" + xPos + ", yPos=" + yPos + ", passengers=" + passengers + ", health=" + health + "]";
     }
 
+    public String toStringGrid() {
+        return "Ship (" + passengers + ")(" + health + ")  ";
+    }
+
     public boolean isWreck() {
         if (passengers <= 0) {
             return true;
@@ -57,7 +61,7 @@ public class Ship implements Serializable {
         this.xPos = xPos;
         this.yPos = yPos;
         this.passengers = passengers;
-        this.health = 20;
+        this.health = 100;
     }
 
     public void pickUp(int numberOfPassengers) {

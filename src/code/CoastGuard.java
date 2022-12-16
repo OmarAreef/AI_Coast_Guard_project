@@ -1,8 +1,11 @@
 package code;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Set;
 
+import code.QueuingFunctions.A1;
+import code.QueuingFunctions.A2;
 import code.QueuingFunctions.BFS;
 import code.QueuingFunctions.DFS;
 import code.QueuingFunctions.GR1;
@@ -243,6 +246,12 @@ public class CoastGuard extends searchProblem {
             case "GR2":
                 Qfunc = new GR2();
                 break;
+            case "AS1":
+                Qfunc = new A1();
+                break;
+            case "AS2":
+                Qfunc = new A2();
+                break;
             default:
                 Qfunc = new GR1();
         }
@@ -256,28 +265,113 @@ public class CoastGuard extends searchProblem {
         int retrievedBlackBoxes = solution.state.retrievedBlackBoxes;
         int deaths = solution.state.deaths;
         int expandedStates = solution.state.expandedStates;
+        String visualizeString = "";
         while (solution.parent != null) {
             solutionString = solution.operator + "," + solutionString;
+            if (visualize == true) {
+
+                String[][] gridArray = new String[Rows][Columns];
+
+                gridArray = generateString(gridArray, solution.state);
+                System.out.println("-------------------" + solution.operator + " -----------------");
+                printStringGrid(gridArray);
+
+            }
             solution = solution.parent;
+
         }
         solutionString = solutionString.substring(0, solutionString.length() - 1);
+
         return solutionString + ";" + deaths + ";" + retrievedBlackBoxes + ";" + expandedStates;
+    }
+
+    public static String[][] generateString(String[][] grid, State state) {
+        for (int i = 0; i < grid.length; i++) {
+            String[] row = grid[i];
+            Arrays.fill(row, "");
+        }
+        grid[state.agent.row][state.agent.column] = state.agent.toStringGrid();
+        for (Ship ship : state.ships) {
+            grid[ship.yPos][ship.xPos] = grid[ship.yPos][ship.xPos] + "_" + ship.toStringGrid();
+        }
+        for (Station ship : state.stations) {
+            grid[ship.yPos][ship.xPos] = grid[ship.yPos][ship.xPos] + "_" +
+                    ship.toStringGrid();
+        }
+        return grid;
+
+    }
+
+    public static void printStringGrid(String[][] array) {
+        System.out.print("    |");
+        for (int i = 0; i < array[0].length; i++) {
+            System.out.print("        ");
+            System.out.print((i));
+            System.out.print("         |");
+        }
+        System.out.println();
+        for (int i = 0; i < array.length; i++) {
+            System.out.print("----+");
+            for (int j = 0; j < array[0].length; j++) {
+                System.out.print("------------------+");
+            }
+            System.out.println();
+            System.out.print("  " + (i + 1) + " |");
+            for (int j = 0; j < array[0].length; j++) {
+                if (array[i][j].length() < 10) {
+                    int spaces = (9 - array[i][j].length()) * 2;
+                    for (int k = 0; k < spaces; k++) {
+                        System.out.print(" ");
+                    }
+                    System.out.print(array[i][j]);
+                    for (int k = 0; k < (9 - array[i][j].length()) - spaces; k++) {
+                        System.out.print(" ");
+                    }
+                } else {
+                    System.out.print(array[i][j]);
+                }
+                System.out.print("|");
+            }
+            System.out.println();
+        }
     }
 
     public static void main(String[] args) {
         // String grid = genGrid();
         // String test_grid = "5,6;50;0,1;0,4,3,3;1,1,90;";
-        // String test_grid = "3,4;97;1,2;0,1;3,2,65;";
+        String test_grid = "3,4;97;1,2;0,1;3,2,65;";
         // String test_grid = "6,6;52;2,0;2,4,4,0,5,4;2,1,19,4,2,6,5,0,8;";
+        String grid3 = "8,5;60;4,6;2,7;3,4,37,3,5,93,4,0,40;";
 
-        String test_grid = "8,5;60;4,6;2,7;3,4,37,3,5,93,4,0,40;";
+        // String test_grid = "8,5;60;4,6;2,7;3,4,37,3,5,93,4,0,40;";
         String grid9 = "7,5;100;3,4;2,6,3,5;0,0,4,0,1,8,1,4,77,1,5,1,3,2,94,4,3,46;";
+        String grid1 = "6,6;52;2,0;2,4,4,0,5,4;2,1,19,4,2,6,5,0,8;";
 
-        ;
+        Runtime runtime = Runtime.getRuntime();
+        String grid2 = "7,5;40;2,3;3,6;1,1,10,4,5,90;";
+
         // String test_grid = "1,15;72;0,7;0,10;0,2,73;";
+        long startTime = System.currentTimeMillis();
+        runtime.gc();
 
-        String sol = solve(grid9, "GR1", false);
+        long memory = runtime.totalMemory() - runtime.freeMemory();
+        System.out.println("Before Used memory is bytes: " + memory);
+        System.out.println("Before Used memory is megabytes: "
+                + memory / (1024L * 1024L));
+        String sol = solve(grid2, "AS2", false);
+        long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println("------------- Solution -------");
         System.out.println(sol);
+
+        System.out.println("------------- Elapsed Time -------");
+        System.out.println(((float) (elapsedTime)) / 1000);
+        // Run the garbage collector
+        // Calculate the used memory
+        memory = runtime.totalMemory() - runtime.freeMemory();
+        System.out.println("Used memory is bytes: " + memory);
+        System.out.println("Used memory is megabytes: "
+                + memory / (1024L * 1024L));
 
     }
 
